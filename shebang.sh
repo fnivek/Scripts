@@ -6,7 +6,7 @@ if [ "$#" -ne 1 ]; then
 fi 
 
 python_shebang="#!/usr/bin/env python"
-num_lines="$(cat $1 | wc -l)"
+num_lines="$(cat $1 | wc -l)" 2> /dev/null
 
 if [ ${num_lines} -eq 0 ]; then
 	echo ${python_shebang} >> $1
