@@ -1,0 +1,7 @@
+#!/bin/bash
+if [[ $# -ne 2 ]]; then
+	echo "Pass h v"
+	exit
+fi
+dconf write /org/compiz/profiles/unity/plugins/core/hsize $1
+dconf write /org/compiz/profiles/unity/plugins/core/vsize $2
