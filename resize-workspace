@@ -1,7 +1,47 @@
 #!/bin/bash
-if [[ $# -ne 2 ]]; then
-	echo "Pass h v"
-	exit
+
+print_usage () {
+	printf "Usage: $0 [options] hsize vsize\n\thsize and vsize >= 1\n\t-w (true || false)\twrap around\n\t-h\t\tdisplay help\n"
+	exit 0
+}
+
+# Parse options
+while getopts :hw: opt; do
+	case $opt in
+		w)
+			w=${OPTARG}
+			(( w == true || w == false )) || print_usage
+			dconf write /org/compiz/profiles/unity/plugins/wall/allow-wraparound $w
+		;;
+		*)
+			print_usage
+		;;
+	esac
+done
+
+# Parse hsize and vsize
+if [[ $(($# - $OPTIND)) -lt 1 ]]; then
+	if [[ $w ]]; then 
+		exit 0
+	else
+		print_usage
+	fi
 fi
-dconf write /org/compiz/profiles/unity/plugins/core/hsize $1
-dconf write /org/compiz/profiles/unity/plugins/core/vsize $2
+
+hsize=${@:OPTIND:1}
+vsize=${@:OPTIND+1:1}
+
+# Check type
+re=^[0-9]+$
+if ! [[ $hsize =~ $re && $vsize =~ $re ]] ; then
+	print_usage
+fi
+
+# Ensure greater than 1
+if [[ $hsize == 0 || $vsize == 0 ]] ; then
+	print_usage
+fi
+
+# Set screen size
+dconf write /org/compiz/profiles/unity/plugins/core/hsize $hsize
+dconf write /org/compiz/profiles/unity/plugins/core/vsize $vsize
