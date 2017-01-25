@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# Test the default bash script
+
+# Globals
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Source the default script
+. "${SCRIPT_DIR}/default-bash.sh"
+
+# Test
+default_cmd_line_parse $@
+err "Verbosity set to ${VERBOSITY}"
+info "This is some info that shows up at v > 0"
+debug "This is some debug that shows up after v > 1"
