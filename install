@@ -65,6 +65,8 @@ if ! sudo -H python -m pip install flake8 &> /dev/null; then
   fi
 fi
 
+sudo cp "${SCRIPT_DIR}/.flake8" "${INSTALL_DIR}"
+
 debug "flake8 installed"
 
 # Complete

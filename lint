@@ -1,0 +1,82 @@
+#!/bin/bash
+#
+# This script lints python files at the current directory or a passed directory
+# TODO: Add C++ suport
+
+# Globals
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+INSTALL_DIR="/opt/scripts"
+
+# Source default bash
+. "${INSTALL_DIR}/default-bash.sh"
+
+################################
+# Prints usage 
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   None
+################################
+print_usage() {
+  printf "Usage: $0 [options]
+    \t-h\t Display this help
+    \t-v\t Set verbosity [0: silent, 1: info, 2: max] default 1
+    \t-d dir\t Directory to lint if no directory passed then $(pwd) will be used 
+    "
+  exit 0
+}
+
+################################
+# Prints linter output to stdout 
+# Globals:
+#   VERBOSITY
+# Arguments:
+#   linter output
+# Returns:
+#   None
+################################
+print_lint() {
+  if [[ "${VERBOSITY}" -gt 0 ]]; then
+    for i in "$@"; do
+      printf "$i\n"
+    done
+  fi
+}
+
+# Handle command line arguments
+lint_dir="$(pwd)"
+while getopts ':v:d:' flag; do
+  case "${flag}" in
+    v) VERBOSITY="${OPTARG}" ;;
+    d) lint_dir="${OPTARG}" ;;
+    *) print_usage ;;
+  esac
+done
+
+# Run python linter
+fail=0
+info "Starting python flake8 linter"
+py_lint=$(python -m flake8 --config="${INSTALL_DIR}/.flake8" "${lint_dir}/")
+if [[ ! -z "$py_lint" ]]; then
+  fail=1
+  info "The python code failed to pass flake8 linter with the following errors"
+  print_lint "${py_lint}"
+fi
+
+
+# TODO (fnivek): Setup c++ linter
+#log "Starting C++ cpplint linter"
+#cpp_files="$(find -name *.cpp -o -name *.h -o -name *.hpp -o -name *.cc)"
+#if [[ ! -z "$cpp_files" ]]; then
+# cpp_lint="$(python2.7 $CATKIN_DIR/src/fly/cpplint.py --linelength=100 $cpp_files 2>&1)"
+# if [[ ! -z "$cpp_lint" ]]; then
+#   # fail=1
+#   warn "The c++ code failed to pass cpplint linter with the following errors\n\tThis will not break the build until further testing is done:"
+#   print_lint "$cpp_lint"
+# fi
+#fi
+
+# Exit with failure code
+exit "${fail}"

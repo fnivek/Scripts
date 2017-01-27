@@ -1,0 +1,11 @@
+[flake8]
+ignore = D203
+exclude =
+    # Don't need to check in the .git folder
+    .git,
+    # Don't look through any cached python files
+    __pycache__,
+    # Ignore cpplint.py from google
+    cpplint.py
+# Allow lines to be up to 100 characters long
+max-line-length = 100
