@@ -1,0 +1,72 @@
+#!/bin/bash
+#
+# This script installs all the linters I use
+
+# Globals
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+INSTALL_DIR="/opt/scripts"
+
+# Setup file system
+sudo mkdir -p "${INSTALL_DIR}/bin"
+if ! grep -q "${INSTALL_DIR}/bin" ~/.profile; then
+  printf '\n# Include scripts bin\nexport PATH=$PATH:/opt/scripts/bin' >> ~/.profile
+fi
+. ~/.profile
+
+# Move the default bash into /opt/scripts
+sudo cp "${SCRIPT_DIR}/default-bash.sh" "${INSTALL_DIR}"
+
+# Source default bash
+. "${INSTALL_DIR}/default-bash.sh"
+
+# Handle command line arguments
+default_cmd_line_parse "$@"
+
+# Install script dependencies
+info "Installing script dependencies"
+debug 'sudo apt update -qq'
+sudo apt update -qq
+sudo apt install -qq wget git &> /dev/null
+
+# Copying executables
+info "Copying executables"
+executables="$(find ${SCRIPT_DIR} \( -name .git \) -prune -o -executable -type f -print)"
+while read -r exec; do
+  if [[ "${exec}" != "${SCRIPT_DIR}/install" && "${exec}" != "${SCRIPT_DIR}/test-default-bash" ]]; then
+    debug "Copy ${exec}"
+    sudo cp "${exec}" "${INSTALL_DIR}/bin/"
+  fi
+done <<< "${executables}"
+
+# Linters
+info "Installing linters"
+
+# First install pip
+if ! sudo -H python -m pip install flake8 &> /dev/null; then
+  debug "Installing pip"
+
+  # Download pip install script
+  get_pip="$(mktemp)"
+  if ! wget -q -O ${get_pip} https://bootstrap.pypa.io/get-pip.py; then
+    err "Can't download get-pip.py from https://bootstrap.pypa.io/get-pip.py please check internet connection"
+    exit 1
+  fi
+
+  # Install pip
+  if ! "$(sudo -H python get_pip &> /dev/null)"; then
+    err "Failed to install pip"
+    exit 1
+  fi
+
+  # Install flake8
+  if ! "$(sudo -H python -m pip install flake8 &> /dev/null)"; then
+    err "Failed to install flake8"
+    exit 1
+  fi
+fi
+
+debug "flake8 installed"
+
+# Complete
+info "Installation succesfully completed"
+exit 0
