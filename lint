@@ -61,8 +61,10 @@ info "Starting python flake8 linter"
 py_lint=$(python -m flake8 --config="${INSTALL_DIR}/.flake8" "${lint_dir}/")
 if [[ ! -z "$py_lint" ]]; then
   fail=1
-  info "The python code failed to pass flake8 linter with the following errors"
+  info "Failed to pass flake8 with the following errors:"
   print_lint "${py_lint}"
+else
+  info "Passed flake8 linter"
 fi
 
 
