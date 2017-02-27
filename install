@@ -59,7 +59,8 @@ if ! sudo -H python -m pip install flake8 &> /dev/null; then
   fi
 
   # Install flake8
-  if ! "$(sudo -H python -m pip install flake8 &> /dev/null)"; then
+  sudo -H python -m pip install flake8 &> /dev/null
+  if ! [[ "$?" ]]; then
     err "Failed to install flake8"
     exit 1
   fi
@@ -68,6 +69,14 @@ fi
 sudo cp "${SCRIPT_DIR}/.flake8" "${INSTALL_DIR}"
 
 debug "flake8 installed"
+
+# Install markdown converter
+info "Installing python markdown"
+sudo -H python -m pip install markdown &> /dev/null
+if ! [[ "$?" ]]; then
+  err "Failed to install python markdown"
+  exit 1
+fi
 
 # Complete
 info "Installation succesfully completed"
