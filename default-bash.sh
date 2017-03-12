@@ -7,12 +7,14 @@
 GOOD_COLOR='\033[1;36m'
 ERROR_COLOR='\033[1;31m'
 DEBUG_COLOR='\033[1;32m'
+WARN_COLOR='\033[1;33m'
 NO_COLOR='\033[0m'
 INFO_PREFIX="${GOOD_COLOR}INFO [%(%Y-%m-%dT%H:%M:%S%z)T]:"
 ERROR_PREFIX="${ERROR_COLOR}ERROR [%(%Y-%m-%dT%H:%M:%S%z)T]:"
 DEBUG_PREFIX="${DEBUG_COLOR}DEBUG [%(%Y-%m-%dT%H:%M:%S%z)T]:"
+WARN_PREFIX="${WARN_COLOR}WARN [%(%Y-%m-%dT%H:%M:%S%z)T]:"
 
-VERBOSITY=1
+VERBOSITY=2
 
 ################################
 # Prints usage 
@@ -26,7 +28,7 @@ VERBOSITY=1
 default_print_usage() {
   printf "Usage: $0 [options]
     \t-h\t Display this help
-    \t-v\t Set verbosity [0: silent, 1: info, 2: max] default 1
+    \t-v\t Set verbosity [0: silent, 1: info, 2: warn 3: debug] default 2
     "
   exit 0
 }
@@ -41,7 +43,7 @@ default_print_usage() {
 #   None
 ################################
 err() {
-  printf "$ERROR_PREFIX $@ $NO_COLOR\n" >&2
+  printf "${ERROR_PREFIX} $@ ${NO_COLOR}\n" >&2
 }
 
 ################################
@@ -55,7 +57,7 @@ err() {
 ################################
 info() {
   if [[ "${VERBOSITY}" -gt 0 ]]; then
-    printf "$INFO_PREFIX $@ $NO_COLOR\n"
+    printf "${INFO_PREFIX} $@ ${NO_COLOR}\n"
   fi
 }
 
@@ -69,8 +71,23 @@ info() {
 #   None
 ################################
 debug() {
+  if [[ "${VERBOSITY}" -gt 2 ]]; then
+    printf "${DEBUG_PREFIX} $@ ${NO_COLOR}\n"
+  fi
+}
+
+################################
+# Prints warn to stdout 
+# Globals:
+#   VERBOSITY
+# Arguments:
+#   Message
+# Returns:
+#   None
+################################
+warn() {
   if [[ "${VERBOSITY}" -gt 1 ]]; then
-    printf "$DEBUG_PREFIX $@ $NO_COLOR\n"
+    printf "${WARN_PREFIX} $@ ${NO_COLOR}\n"
   fi
 }
 
