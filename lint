@@ -22,8 +22,10 @@ INSTALL_DIR="/opt/scripts"
 print_usage() {
   printf "Usage: $0 [options]
     \t-h\t Display this help
-    \t-v\t Set verbosity [0: silent, 1: info, 2: max] default 1
-    \t-d dir\t Directory to lint if no directory passed then $(pwd) will be used 
+    \t-v\t Set verbosity [0: silent, 1: info, 2: warn 3: debug] default 2
+    \t-d dir\t Directory to lint if no directory passed then $(pwd) will be used
+    \t-p\t Only lint python
+    \t-c\t Only lint C/C++
     "
   exit 0
 }
@@ -47,38 +49,58 @@ print_lint() {
 
 # Handle command line arguments
 lint_dir="$(pwd)"
-while getopts ':v:d:' flag; do
+while getopts ':v:d:pc' flag; do
   case "${flag}" in
     v) VERBOSITY="${OPTARG}" ;;
     d) lint_dir="${OPTARG}" ;;
+    p) python_only=0 ;;
+    c) c_only=0 ;;
     *) print_usage ;;
   esac
 done
 
-# Run python linter
+# Set fail to false
 fail=0
-info "Starting python flake8 linter"
-py_lint=$(python -m flake8 --config="${INSTALL_DIR}/.flake8" "${lint_dir}/")
-if [[ ! -z "$py_lint" ]]; then
-  fail=1
-  info "Failed to pass flake8 with the following errors:"
-  print_lint "${py_lint}"
-else
-  info "Passed flake8 linter"
+
+# Run python linter
+if [[ ! "${c_only}" ]]; then
+  info "Starting python flake8 linter"
+  py_lint=$(python -m flake8 --config="${INSTALL_DIR}/.flake8" "${lint_dir}/")
+  if [[ ! -z "$py_lint" ]]; then
+    fail=1
+    warn "Failed to pass flake8 with the following errors:"
+    print_lint "${py_lint}"
+  else
+    info "Passed flake8 linter"
+  fi
 fi
 
+# Run cpplint linter
+if [[ ! "${python_only}" ]]; then
+  # Get all c and c++ files
+  cpp_files="$(find ${lint_dir} -name *.cpp -o -name *.h -o -name *.hpp -o -name *.cc -o -name *.c)"
 
-# TODO (fnivek): Setup c++ linter
-#log "Starting C++ cpplint linter"
-#cpp_files="$(find -name *.cpp -o -name *.h -o -name *.hpp -o -name *.cc)"
-#if [[ ! -z "$cpp_files" ]]; then
-# cpp_lint="$(python2.7 $CATKIN_DIR/src/fly/cpplint.py --linelength=100 $cpp_files 2>&1)"
-# if [[ ! -z "$cpp_lint" ]]; then
-#   # fail=1
-#   warn "The c++ code failed to pass cpplint linter with the following errors\n\tThis will not break the build until further testing is done:"
-#   print_lint "$cpp_lint"
-# fi
-#fi
+  # Check that at least some files were found
+  if [[ ! -z "${cpp_files}" ]]; then
+    info "Starting C/C++ cpplint linter"
+    debug "Linting the following files: ${cpp_files}"
+
+    # Run the linter
+    cpp_lint="$(python2.7 ${INSTALL_DIR}/bin/cpplint.py --linelength=100 ${cpp_files} 2>&1)"
+
+    # Check if there where errors
+    if [[ ! -z "${cpp_lint}" ]]; then
+      # TODO ignore certain errors that can't be ignored by cmd line args
+      fail=1
+      warn "Failed to pass cpplint with the following errors:"
+      print_lint "${cpp_lint}"
+    else
+      info "Passed cpplint linter"
+    fi
+  else
+    debug "No files for cpplint to lint"
+  fi
+fi
 
 # Exit with failure code
 exit "${fail}"
