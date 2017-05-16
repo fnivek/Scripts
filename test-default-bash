@@ -10,6 +10,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Test
 default_cmd_line_parse $@
-err "Verbosity set to ${VERBOSITY}"
-info "This is some info that shows up at v > 0"
-debug "This is some debug that shows up after v > 1"
+info "Verbosity set to ${VERBOSITY}"
+err "This is some error that always shows up at v > 0 on stderr"
+warn "This is some warn that shows up at v > 1"
+info "This is some info that shows up after v > 2"
+debug "This is some debug that shows up after v > 3"
