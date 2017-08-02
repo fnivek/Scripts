@@ -1,0 +1,12 @@
+#    3  sudo apt update 
+#    4  sudo apt install terminator
+#   10  sudo apt install vim
+#   13  sudo apt install git
+#   16  sudo dpkg -i google-chrome-stable_current_amd64.deb 
+#   17  sudo apt install -f
+#   18  sudo dpkg -i google-chrome-stable_current_amd64.deb 
+#   19  sudo apt upgrade 
+#   23  sudo add-apt-repository ppa:graphics-drivers/ppa
+#   24  sudo apt update
+#   28  sudo apt install nvidia-375 
+
